@@ -18,8 +18,8 @@
 
 ;;; Commentary
 
-;; `clojure-offline-create-script' - create installation script for certain
-;; dependencies.
+;; `clojure-offline-create-script' - Construct download and/or installation
+;; script for certain clojure dependencies.
 ;;
 ;; See README.md for detail description.
 
@@ -231,7 +231,10 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
     (read-from-minibuffer "Clojure artifact: "
                           (buffer-substring (mark) (point)) nil nil
                           'clojure-offline-artifact-name-history)))
-  (message (clojure-offline-get-jar-urls artifact-name)))
+  (message (apply 'concat
+                  (mapcar (lambda (art-path)
+                            (concat art-path "\n"))
+                          (clojure-offline-get-jar-urls artifact-name)))))
 
 ;;;###autoload
 (defun clojure-offline-create-script-buffer ()
@@ -251,19 +254,25 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
      (deploy nil)
      (clear t))
   "
+Construct download and/or installation script for certain clojure dependencies.
+The parameters are:
 `download' when t - create required artifacts download script.
-`install' `:localrepo' `:manual'
+`install' `:localrepo' - install artifacts via localrepo leiningen plugin
+          `:manual' - install artifacts via simple copy
 `deploy' when t - creaate maven local repository.
 `clear' when t - clear output script buffer from previous output.
 "
   (interactive
    (list
-    (read-from-minibuffer "Clojure artifacts list: "
+    (read-from-minibuffer "Clojure artifacts vector (or single artifact): "
                           (buffer-substring (mark) (point)) nil nil
                           'clojure-offline-artifacts-list-history)))
   (let* ((artifact-names (if (and (not (vectorp artifact-names))
                                   (stringp artifact-names))
                              (read (clojure-offline-trim-string artifact-names))
+                           artifact-names))
+         (artifact-names (if (not (sequencep (elt artifact-names 0)))
+                             (vector artifact-names)
                            artifact-names))
          (script (apply 'concat
                         (append
