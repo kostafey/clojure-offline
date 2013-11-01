@@ -225,18 +225,6 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
 ;;----------------------------------------------------------------------
 ;;
 ;;;###autoload
-(defun clojure-offline-guess-clojars-url (artifact-name)
-  (interactive
-   (list
-    (read-from-minibuffer "Clojure artifact: "
-                          (buffer-substring (mark) (point)) nil nil
-                          'clojure-offline-artifact-name-history)))
-  (message (apply 'concat
-                  (mapcar (lambda (art-path)
-                            (concat art-path "\n"))
-                          (clojure-offline-get-jar-urls artifact-name)))))
-
-;;;###autoload
 (defun clojure-offline-create-script-buffer ()
   "Create buffer dedicated to output configure required clojure jars."
   (let ((buf (get-buffer-create clojure-offline-script-buffer-name)))
