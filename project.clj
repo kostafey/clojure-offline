@@ -5,4 +5,5 @@
   :license {:name "General Public License 2"
             :url "http://www.gnu.org/licenses/gpl-2.0.html"}
   :source-paths ["src/clj"]
-  :dependencies [[org.clojure/clojure "1.5.1"]])
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [leiningen-core "2.1.3"]])

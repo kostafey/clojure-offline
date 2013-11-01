@@ -245,12 +245,27 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
       (toggle-truncate-lines nil)
       buf)))
 
+(defvar clomacs-loaded nil)
+
+(when (require 'clomacs nil 'noerror)
+
+  (clomacs-defun clojure-offline-set-offline
+                 clojure-offline.lein-caller/set-offline)
+
+  (clojure-offline-set-offline t)
+
+  (clomacs-defun clojure-offline-get-dependeces
+                 clojure-offline.lein-caller/get-dependeces-list)
+
+  (setq clomacs-loaded t))
+
 ;;;###autoload
 (defun* clojure-offline-create-script
     (artifact-names
      &optional &key
      (download t)
      (install :localrepo)
+     (dependencies clomacs-loaded)
      (deploy nil)
      (clear t))
   "
@@ -259,6 +274,7 @@ The parameters are:
 `download' when t - create required artifacts download script.
 `install' `:localrepo' - install artifacts via localrepo leiningen plugin
           `:manual' - install artifacts via simple copy
+`dependencies' when t - search for inner dependencies via clojure-side code.
 `deploy' when t - creaate maven local repository.
 `clear' when t - clear output script buffer from previous output.
 "
@@ -271,8 +287,14 @@ The parameters are:
                                   (stringp artifact-names))
                              (read (clojure-offline-trim-string artifact-names))
                            artifact-names))
+         ;; When only single artifact is passed.
          (artifact-names (if (not (sequencep (elt artifact-names 0)))
                              (vector artifact-names)
+                           artifact-names))
+         ;; For inner dependencies.
+         (artifact-names (if dependencies
+                             (read
+                              (clojure-offline-get-dependeces artifact-names))
                            artifact-names))
          (script (apply 'concat
                         (append

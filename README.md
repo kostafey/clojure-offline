@@ -3,20 +3,32 @@
 The tools and notes, assigned to help configure clojure development environment
 without internet connection.
 
+## Installation
+
+* copy this repository to somewhere in your .emacs.d
+* add require to your .emacs:
+
+```lisp
+(add-to-list 'load-path "~/.emacs.d/clojure-offline/src/elisp/")
+(require 'clojure-offline)
+```
+
 ## Usage
 
-How to work with clojure offline
+How to work with clojure offline.
 
 ### Short story
 
 Use `clojure-offline-create-script` elisp function e.g.
 
 ```lisp
-(clojure-offline-create-script [[ring/ring-core "1.2.0"]])
+(clojure-offline-create-script [ring/ring-core "1.2.0"])
 ```
 
-or just select (mark) `[[ring/ring-core "1.2.0"]]` and run <br>
+or just select (mark) `[ring/ring-core "1.2.0"]` and run <br>
 `M-x clojure-offline-create-script RET RET`
+
+You can use the select (mark) the whole dependencies vector.
 
 The resolving all dependences offline, in general, is hard, so this resource
 tries to help with it:
@@ -45,7 +57,8 @@ file can be obtained by evaluating the following elisp script:
 ```lisp
 (clojure-offline-create-script
     [[lein-localrepo "0.5.2"]
-     [org.clojure/tools.cli "0.2.2"]])
+     [org.clojure/tools.cli "0.2.2"]]
+     :install :manual)
 ```
 
 (clojure-offline-guess-clojars-url [lein-localrepo "0.5.2"])
