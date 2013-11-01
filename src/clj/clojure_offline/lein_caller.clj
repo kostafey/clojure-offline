@@ -1,7 +1,8 @@
 (ns clojure-offline.lein-caller
   (:require
    [clojure.java.io :as io]
-   [cemerick.pomegranate.aether :as aether])
+   [cemerick.pomegranate.aether :as aether]
+   [clomacs.clomacs :as clomacs])
   (:use [clojure.repl :only [doc]]
         [clojure.string :only (join split)]
         clojure.pprint
@@ -16,18 +17,13 @@
     (pprint m w)
     (clojure.string/replace (.toString w) #"\n" "<br>") ))
 
-(def offline-atom (atom false))
-
-(defn set-offline [is-offline]
-  (reset! offline-atom is-offline))
-
 (defn get-hierarchy [artifacts-list]
   (aether/dependency-hierarchy
    artifacts-list
    (aether/resolve-dependencies
     :coordinates artifacts-list
     :repositories default-repositories
-    :offline? @offline-atom)))
+    :offline? @clomacs/offline-atom)))
 
 (def artifacts (atom (list)))
 

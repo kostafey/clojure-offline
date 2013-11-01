@@ -101,8 +101,8 @@ scope."
 ;;;###autoload
 (defun clojure-offline-form-urls (art-path)
   (list
-   (concat "https://clojars.org/repo/" art-path ".jar")
-   (concat "https://clojars.org/repo/" art-path ".pom")
+   (concat "https://clojars.org/repo/" art-path ".jar --no-check-certificate")
+   (concat "https://clojars.org/repo/" art-path ".pom --no-check-certificate")
    (concat "http://repo1.maven.org/maven2/" art-path ".jar")
    (concat "http://repo1.maven.org/maven2/" art-path ".pom")))
 
@@ -237,13 +237,10 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
 
 (when (require 'clomacs nil 'noerror)
 
-  (clomacs-defun clojure-offline-set-offline
-                 clojure-offline.lein-caller/set-offline)
-
-  (clojure-offline-set-offline t)
-
   (clomacs-defun clojure-offline-get-dependeces
-                 clojure-offline.lein-caller/get-dependeces-list)
+                 clojure-offline.lein-caller/get-dependeces-list
+                 :lib-name "clojure-offline"
+                 :namespace "clojure-offline.lein-caller")
 
   (setq clomacs-loaded t))
 
@@ -256,8 +253,7 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
      (dependencies clomacs-loaded)
      (deploy nil)
      (clear t))
-  "
-Construct download and/or installation script for certain clojure dependencies.
+  "Construct download and installation script for certain clojure dependencies.
 The parameters are:
 `download' when t - create required artifacts download script.
 `install' `:localrepo' - install artifacts via localrepo leiningen plugin
@@ -271,6 +267,8 @@ The parameters are:
     (read-from-minibuffer "Clojure artifacts vector (or single artifact): "
                           (buffer-substring (mark) (point)) nil nil
                           'clojure-offline-artifacts-list-history)))
+  (if dependencies
+      (clomacs-set-offline t))
   (let* ((artifact-names (if (and (not (vectorp artifact-names))
                                   (stringp artifact-names))
                              (read (clojure-offline-trim-string artifact-names))
