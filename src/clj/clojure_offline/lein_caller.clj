@@ -45,7 +45,7 @@
   @artifacts)
 
 (defn get-dependeces-list [artifacts-list]
-  (into [] (-> (str "'" artifacts-list)
+  (into [] (-> (str "'" (into [] (map format-artifact artifacts-list)))
                load-string get-hierarchy run-wanderer)))
 
 (defn parse-artifact [artifact-name]
@@ -54,13 +54,24 @@ Input format, e.g.:
  [org.clojure/clojure \"1.5.1\"]
 Ouptut format, e.g.:
  (\"org.clojure\" \"clojure\" \"1.5.1\")"
-  (let [group-and-artifact (split (str (first artifact-name)) #"/")
-        group-id (first group-and-artifact)
-        artifact-id (if (nil? (second group-and-artifact))
-                      (first group-and-artifact)
-                      (second group-and-artifact))
-        version (second artifact-name)]
-    (list group-id artifact-id version)))
+  (let [is-lein-format (vector? artifact-name)]
+    (if is-lein-format
+      ;;
+      ;; lein format, e.g. [org.clojure/clojure "1.5.1"]
+      (let [group-and-artifact (split (str (first artifact-name)) #"/")
+            group-id (first group-and-artifact)
+            artifact-id (if (nil? (second group-and-artifact))
+                          (first group-and-artifact)
+                          (second group-and-artifact))
+            version (second artifact-name)]
+        (list group-id artifact-id version))
+      ;;
+      ;; maven format, e.g. "org.clojure:clojure:pom:1.5.1"
+      (let [group-and-artifact (.split artifact-name ":")
+            group-id (get group-and-artifact 0)
+            artifact-id (get group-and-artifact 1)
+            version (get group-and-artifact 3)]
+        (list group-id artifact-id version)))))
 
 (defmacro with-artifact [artifact-name & body]
   "Inject `group-id' `artifact-id' `version' local variables to the `body'
@@ -70,6 +81,11 @@ scope."
          ~(symbol "artifact-id") (nth artifact# 1)
          ~(symbol "version") (nth artifact# 2)]
      ~@body))
+
+(defn format-artifact [artifact-name]
+  (with-artifact
+    artifact-name
+    (load-string (str "'[" group-id "/" artifact-id " \"" version "\"]"))))
 
 (defn get-jar-urls [artifact-name extension]
   "Convert from leiningen's `artifact-name' to probably jar url location on
@@ -159,10 +175,11 @@ to
          " "
          (get-m2-path artifact-name))))
 
-
 (comment
   (in-ns 'clojure-offline.lein-caller)
 
   (get-dependeces-list '[[lein-localrepo "0.5.2"]])
   (get-dependeces-list '[[ring/ring-core "1.2.0"]])
+  (get-dependeces-list '["org.clojure:clojure:pom:1.5.1"])
+  (get-dependeces-list '["org.clojure:data.xml:pom:0.0.6"])
   )
