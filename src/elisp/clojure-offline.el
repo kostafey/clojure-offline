@@ -236,12 +236,10 @@ mvn deploy:deploy-file -DgroupId=lein-ring -DartifactId=lein-ring \
 (defvar clomacs-loaded nil)
 
 (when (require 'clomacs nil 'noerror)
-
   (clomacs-defun clojure-offline-get-dependeces
                  clojure-offline.lein-caller/get-dependeces-list
                  :lib-name "clojure-offline"
                  :namespace clojure-offline.lein-caller)
-
   (setq clomacs-loaded t))
 
 ;;;###autoload

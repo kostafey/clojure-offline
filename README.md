@@ -163,6 +163,22 @@ Again:
                                 "clojure-complete:clojure-complete:pom:0.2.2"])
 ```
 
+* One of the clomacs' dependencies jar is required:
+
+```
+if: ArtifactNotFoundException The repository system is offline but the artifact
+org.clojure:tools.nrepl:jar:0.2.3 is not available in the local repository.
+org.sonatype.aether.impl.internal.DefaultArtifactResolver.resolve
+(DefaultArtifactResolver.java:348)
+```
+
+Use `:dependencies` nil flag to inhibit run clojure-side code:
+
+```lisp
+(clojure-offline-create-script ["org.clojure:tools.nrepl:jar:0.2.3"]
+                               :dependencies nil)
+```
+
 ## License
 
 Copyright © 2013 Kostafey <kostafey@gmail.com>
